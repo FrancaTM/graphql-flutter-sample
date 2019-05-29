@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
+import 'package:url_launcher/url_launcher.dart';
+
 import 'github_access_token.dart';
 
 void main() {
@@ -73,6 +75,14 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 """;
 
+  void _launchUrl(String url) async {
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'could not launch $url';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -107,13 +117,23 @@ class _MyHomePageState extends State<MyHomePage> {
               itemBuilder: (context, index) {
                 final repository = repositories[index];
 
+                String url = repository['url'].toString();
                 return ListTile(
                   title: Text(repository['name'].toString()),
                   leading: Icon(
                     Icons.check,
                     color: Colors.purple,
                   ),
-                  subtitle: Text(repository['url'].toString()),
+                  subtitle: InkWell(
+                    child: Text(url),
+                    onTap: () {
+                      _launchUrl(url);
+                    },
+                  ),
+                  trailing: IconButton(
+                    icon: Icon(Icons.arrow_forward),
+                    onPressed: () => _launchUrl(url),
+                  ),
                 );
               },
             ),
