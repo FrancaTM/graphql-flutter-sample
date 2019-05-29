@@ -1,7 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
-void main() => runApp(MyApp());
+import 'github_access_token.dart';
+
+void main() {
+  final HttpLink httpLink = HttpLink(
+    uri: 'https://api.github.com/graphql',
+  );
+
+  final AuthLink authLink = AuthLink(
+    getToken: () async => 'Bearer $github_access_token',
+    // OR
+    // getToken: () => 'Bearer <YOUR_PERSONAL_ACCESS_TOKEN>',
+  );
+
+  final Link link = authLink.concat(httpLink as Link);
+
+  ValueNotifier<GraphQLClient> client = ValueNotifier(
+    GraphQLClient(
+      cache: InMemoryCache(),
+      link: link,
+    ),
+  );
+
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
