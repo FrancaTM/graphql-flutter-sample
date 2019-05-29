@@ -65,7 +65,8 @@ class _MyHomePageState extends State<MyHomePage> {
         nodes {
           id
           name
-          viewerHasStarred
+          description
+          url
         }
       }
     }
@@ -90,23 +91,32 @@ class _MyHomePageState extends State<MyHomePage> {
         // Just like in apollo refetch() could be used to manually trigger a refetch
         builder: (QueryResult result, {VoidCallback refetch}) {
           if (result.errors != null) {
-            return Text(result.errors.toString());
+            return Center(child: Text(result.errors.toString()));
           }
 
           if (result.loading) {
-            return Text('Loading');
+            return Center(child: Text('Loading'));
           }
 
           // it can be either Map or List
           List repositories = result.data['viewer']['repositories']['nodes'];
 
-          return ListView.builder(
-            itemCount: repositories.length,
-            itemBuilder: (context, index) {
-              final repository = repositories[index];
+          return Center(
+            child: ListView.builder(
+              itemCount: repositories.length,
+              itemBuilder: (context, index) {
+                final repository = repositories[index];
 
-              return Text(repository['name']);
-            },
+                return ListTile(
+                  title: Text(repository['name'].toString()),
+                  leading: Icon(
+                    Icons.check,
+                    color: Colors.purple,
+                  ),
+                  subtitle: Text(repository['url'].toString()),
+                );
+              },
+            ),
           );
         },
       ),
