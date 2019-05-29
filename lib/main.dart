@@ -58,13 +58,20 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
+  // TODO: fix query bug
+  String readRepositories = """
+  query ReadRepositories(\$nRepositories) {
+    viewer {
+      repositories(last: \$nRepositories) {
+        nodes {
+          id
+          name
+          viewerHasStarred
+        }
+      }
+    }
   }
+""";
 
   @override
   Widget build(BuildContext context) {
@@ -72,24 +79,37 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.display1,
-            ),
-          ],
+      body: Query(
+        options: QueryOptions(
+          document:
+              readRepositories, // this is the query string you just created
+          variables: {
+            'nRepositories': 50,
+          },
+          pollInterval: 10,
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
+        // Just like in apollo refetch() could be used to manually trigger a refetch
+        builder: (QueryResult result, {VoidCallback refetch}) {
+          if (result.errors != null) {
+            return Text(result.errors.toString());
+          }
+
+          if (result.loading) {
+            return Text('Loading');
+          }
+
+          // it can be either Map or List
+          List repositories = result.data['viewer']['repositories']['nodes'];
+
+          return ListView.builder(
+            itemCount: repositories.length,
+            itemBuilder: (context, index) {
+              final repository = repositories[index];
+
+              return Text(repository['name']);
+            },
+          );
+        },
       ),
     );
   }
