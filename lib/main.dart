@@ -58,9 +58,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  // TODO: fix query bug
   String readRepositories = """
-  query ReadRepositories(\$nRepositories) {
+  query ReadRepositories(\$nRepositories: Int!) {
     viewer {
       repositories(last: \$nRepositories) {
         nodes {
